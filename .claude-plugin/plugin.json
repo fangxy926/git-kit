@@ -1,0 +1,6 @@
+{
+  "name": "git-kit",
+  "version": "0.1.0",
+  "description": "版本号管理与 Git 发版三件套：提交规范、版本号更新、打 tag 并生成 release notes",
+  "author": { "name": "fangxy" }
+}
