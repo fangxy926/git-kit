@@ -49,7 +49,8 @@ description: |
 
 ### 4. 打 tag
 
-- 将 release notes 写入临时文件，运行：`git tag -a <tag名> -F <release notes 文件>`（annotated tag）。
+- 将 release notes 写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <release notes 文件>`（annotated tag）。
+- 行首避免以 `#` 开头（或保留上面的 `--cleanup=whitespace`），否则会被 git 当作注释行删除。
 
 ### 5. 输出
 
