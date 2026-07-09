@@ -1,14 +1,14 @@
 ---
 name: release-tag
 description: |
-  为当前提交打 annotated tag 并自动生成中文 release notes，不 push。
+  自动生成中文 release notes，同步写入 CHANGELOG.md 并提交，然后打 annotated tag，不 push。
   Use when: (1) 用户想打 tag/发版/release, (2) 用户说 "/release-tag"、"打标签"、"发布版本",
   (3) 紧跟 bump-version 之后发版。默认读版本文件当前版本作为 tag 名，也支持显式指定。
 ---
 
 # Release Tag
 
-为当前提交打 annotated tag，并根据提交历史归纳中文 release notes。**只打 tag，不 push。**
+根据提交历史归纳中文 release notes，写入项目根目录的 CHANGELOG.md 并提交，再打 annotated tag。**tag 描述与 CHANGELOG 条目内容保持一致；不 push。**
 
 ## 调用形式
 
@@ -20,6 +20,7 @@ description: |
 ### 1. 前置检查
 
 - 运行 `git rev-parse --is-inside-work-tree`；非 git 仓库 → 中止并提示。
+- 运行 `git status --porcelain`；若有未提交改动 → 警告并询问是否继续（本 skill 会产生一个 CHANGELOG 提交，避免混入无关改动）。
 
 ### 2. 确定 tag 名
 
@@ -46,15 +47,41 @@ description: |
 | chore | 🔧 杂项 |
 
 - 仅保留有内容的分组；无可识别前缀的提交归入末尾「其它」。
+- 区间内没有任何提交 → 正文写「本次仅更新版本号」。
+- 向用户展示 release notes 确认。**这份内容是唯一事实来源**：下一步写入 CHANGELOG.md 的条目正文与 tag 描述均使用它，逐字一致。
 
-### 4. 打 tag
+### 4. 写入 CHANGELOG.md 并提交
 
-- 将 release notes 写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <release notes 文件>`（annotated tag）。
+- 位置：**项目根目录** `CHANGELOG.md`；文件不存在 → **主动创建**，以 `# Changelog` 作为一级标题开头。
+- 新条目插入在 `# Changelog` 标题之后、所有旧条目之前（最新版本在最上面），正文即上一步的 release notes：
+
+```markdown
+## [<版本>] - <YYYY-MM-DD>
+
+### ✨ 新功能
+
+- 要点一
+
+### 🐛 修复
+
+- 要点二
+```
+
+- 条目标题：semver 版本用 `## [x.y.z] - YYYY-MM-DD`；日期版本（如 `2026-07-09`）本身就是日期，只写 `## [2026-07-09]`，避免重复。
+- 若 CHANGELOG.md 中**已存在同版本条目**：以现有条目为准作为 tag 描述（保证两处一致），并询问用户是否要用新生成的 notes 覆盖它。
+- 不改动其它历史条目。
+- `git add CHANGELOG.md`（只暂存该文件），**调用 git-commit-helper skill** 提交，形如 `docs: 更新 CHANGELOG（<版本>）`。
+
+### 5. 打 tag
+
+- 将 release notes 写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <release notes 文件>`（annotated tag，指向刚才的 CHANGELOG 提交）。
+- tag 描述正文必须与 CHANGELOG 条目正文**逐字一致**（仅条目标题 `## [...]` 行是 CHANGELOG 独有的，不进 tag 描述）。
 - 行首避免以 `#` 开头（或保留上面的 `--cleanup=whitespace`），否则会被 git 当作注释行删除。
 
-### 5. 输出
+### 6. 输出
 
-- tag 名
-- release notes 预览
+- tag 名 + 指向的 commit
+- release notes 预览（即 CHANGELOG 新条目内容）
+- CHANGELOG 提交（hash + message）
 - 待执行的 push 命令：`git push origin <当前分支> <tag名>`（用 `git rev-parse --abbrev-ref HEAD` 取分支名）
 - 明确提示：**未 push**。

@@ -14,8 +14,8 @@ git-commit-helper  →  bump-version  →  release-tag
 | Skill | 职责 | 动 commit | 动 tag | 会 push |
 |---|---|---|---|---|
 | `git-commit-helper` | 分析 diff，生成并执行 Conventional Commits 风格的中文提交 | ✅ 本身 | ❌ | ❌ |
-| `bump-version` | 更新版本号 + 生成 CHANGELOG.md，提交委托 git-commit-helper | ✅ 委托 | ❌ | ❌ |
-| `release-tag` | 读提交历史归纳 release notes，打 annotated tag | ❌ | ✅ | ❌ |
+| `bump-version` | 更新版本号，提交委托 git-commit-helper | ✅ 委托 | ❌ | ❌ |
+| `release-tag` | 归纳 release notes，同步写入 CHANGELOG.md 并提交，打 annotated tag | ✅ 委托 | ✅ | ❌ |
 
 ## 安装
 
@@ -28,8 +28,8 @@ git-commit-helper  →  bump-version  →  release-tag
 ### 典型发版流水线
 
 ```
-/bump-version patch     # 1.2.3 → 1.2.4，改版本文件 + 更新 CHANGELOG.md 并提交（chore: 升级版本号至 1.2.4）
-/release-tag            # 默认用版本文件当前版本打 annotated tag + 生成 release notes
+/bump-version patch     # 1.2.3 → 1.2.4，只改版本文件并提交（chore: 升级版本号至 1.2.4）
+/release-tag            # 生成 release notes → 写入 CHANGELOG.md 并提交 → 打 annotated tag（描述与 CHANGELOG 一致）
 git push origin <分支> <tag>   # 用户手动 push
 ```
 
@@ -50,7 +50,7 @@ git push origin <分支> <tag>   # 用户手动 push
 
 支持的版本文件（按优先级探测）：`package.json` → `pyproject.toml`（含包内 `__version__`）→ `Cargo.toml` → `pom.xml`。
 
-改版本号的同时会分析自上一版本（上一个 tag，或上一次 bump 提交）以来的提交差异，归纳成中文条目写入项目根目录的 `CHANGELOG.md`（不存在则自动创建），并与版本文件一并提交。
+只改版本号，不维护 CHANGELOG——CHANGELOG.md 由 release-tag 在打 tag 时更新。
 
 ### release-tag 调用形式
 
@@ -59,8 +59,11 @@ git push origin <分支> <tag>   # 用户手动 push
 
 tag 默认无 `v` 前缀；若仓库历史 tag 均带 `v` 则自动跟随。
 
+打 tag 前会先把 release notes 写入项目根目录的 `CHANGELOG.md`（不存在则自动创建）并提交，tag 指向该提交，tag 描述与 CHANGELOG 条目内容一致。
+
 ## 设计约定
 
 - **统一提交规范**：三个 skill 共享同一套 Conventional Commits type 约定（feat/fix/docs/style/refactor/perf/test/chore），release notes 按此分组。
 - **松耦合**：三者通过「版本文件」「Conventional Commits 提交历史」两个隐式契约衔接，不互相硬依赖。
-- **非目标**：不自动 push；不集成 GitHub/GitLab Release 发布。CHANGELOG.md 由 bump-version 维护，release-tag 的 release notes 仅写入 tag。
+- **非目标**：不自动 push；不集成 GitHub/GitLab Release 发布。
+- **CHANGELOG 与 tag 一致**：CHANGELOG.md 由 release-tag 在打 tag 时维护（不存在则自动创建），tag 描述与 CHANGELOG 条目正文逐字一致，release notes 只生成一次、两处使用。
