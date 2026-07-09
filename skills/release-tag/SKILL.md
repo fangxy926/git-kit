@@ -74,8 +74,9 @@ description: |
 
 ### 5. 打 tag
 
-- 将 release notes 写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <release notes 文件>`（annotated tag，指向刚才的 CHANGELOG 提交）。
-- tag 描述正文必须与 CHANGELOG 条目正文**逐字一致**（仅条目标题 `## [...]` 行是 CHANGELOG 独有的，不进 tag 描述）。
+- tag 消息格式：**第一行必须是 tag 名本身**（如 `2026.7.9`），空一行后再接 release notes 正文。GitHub 会把 tag 注释第一行当作 release 标题；若正文的 `### ✨ 新功能` 直接出现在首行，release 标题会显示成 "2026.7.9: ### ✨ 新功能"。
+- 将上述格式的 tag 消息写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <tag消息文件>`（annotated tag，指向刚才的 CHANGELOG 提交）。
+- tag 描述正文（首行 tag 名与空行之后的部分）必须与 CHANGELOG 条目正文**逐字一致**（仅条目标题 `## [...]` 行是 CHANGELOG 独有的，不进 tag 描述）。
 - 行首避免以 `#` 开头（或保留上面的 `--cleanup=whitespace`），否则会被 git 当作注释行删除。
 
 ### 6. 输出
@@ -85,3 +86,13 @@ description: |
 - CHANGELOG 提交（hash + message）
 - 待执行的 push 命令：`git push origin <当前分支> <tag名>`（用 `git rev-parse --abbrev-ref HEAD` 取分支名）
 - 明确提示：**未 push**。
+- 若远程是 GitHub（`git remote get-url origin` 含 github.com），附上第 7 步的 GitHub Release 指引。
+
+### 7. GitHub Release 指引（不执行，仅提示）
+
+- **坑**：在 GitHub 上创建 release 时若 Description 留空，页面会回退展示 tag 注释，且按**纯文本**渲染——`###`、反引号等 markdown 全部原样显示。所以 release 的 Description 必须显式填入 notes，不能依赖 tag 注释。
+- push 之后创建 release 的推荐方式：
+  - 有 `gh` CLI：把 release notes **正文**（即 CHANGELOG 该版本条目的正文，不含 `## [...]` 标题行，也不含 tag 名首行）写入临时文件，运行：
+    `gh release create <tag名> --verify-tag --title "<tag名>" --notes-file <正文文件>`
+  - 无 `gh`：提示用户在网页 "Draft a new release" 选择该 tag 后，把 CHANGELOG 对应条目正文粘贴进 Description 再发布。
+- 本 skill 到打 tag 为止，**不 push、不创建 release**；用户明确要求时才代为执行上述命令。
