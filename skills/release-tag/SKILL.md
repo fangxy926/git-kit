@@ -8,7 +8,7 @@ description: |
 
 # Release Tag
 
-根据提交历史归纳中文 release notes，写入项目根目录的 CHANGELOG.md 并提交，再打 annotated tag。**tag 描述与 CHANGELOG 条目内容保持一致；不 push。**
+根据提交历史归纳中文 release notes，写入 CHANGELOG.md 并提交，再打 annotated tag，不 push。
 
 ## 调用形式
 
@@ -74,10 +74,10 @@ description: |
 
 ### 5. 打 tag
 
-- tag 消息格式：**第一行必须是 tag 名本身**（如 `2026.7.9`），空一行后再接 release notes 正文。GitHub 会把 tag 注释第一行当作 release 标题；若正文的 `### ✨ 新功能` 直接出现在首行，release 标题会显示成 "2026.7.9: ### ✨ 新功能"。
+- tag 消息格式：**第一行必须是 tag 名本身**（如 `2026-07-09`），空一行后再接 release notes 正文。GitHub 会把 tag 注释第一行当作 release 标题；若正文的 `### ✨ 新功能` 直接出现在首行，release 标题会显示成 "2026-07-09: ### ✨ 新功能"。
 - 将上述格式的 tag 消息写入临时文件，运行：`git tag -a <tag名> --cleanup=whitespace -F <tag消息文件>`（annotated tag，指向刚才的 CHANGELOG 提交）。
 - tag 描述正文（首行 tag 名与空行之后的部分）必须与 CHANGELOG 条目正文**逐字一致**（仅条目标题 `## [...]` 行是 CHANGELOG 独有的，不进 tag 描述）。
-- 行首避免以 `#` 开头（或保留上面的 `--cleanup=whitespace`），否则会被 git 当作注释行删除。
+- 不要去掉 `--cleanup=whitespace`：release notes 含 `### ✨ 新功能` 等以 `#` 开头的行，git 默认的 cleanup 会把它们当注释删掉，破坏与 CHANGELOG 的逐字一致。
 
 ### 6. 输出
 

@@ -14,7 +14,7 @@ Streamline git commits by analyzing changes and generating meaningful commit mes
 ## 工作流程
 
 1. **检查状态**: 运行 `git status` 查看暂存/未暂存的变更
-2. **分析差异**: 运行 `git diff --staged`（如无暂存则运行 `git diff`）
+2. **分析差异**: 运行 `git diff --staged`。暂存区非空时只提交已暂存的内容，不追加暂存其它文件（bump-version、release-tag 先只暂存目标文件再调用本 skill）；暂存区为空时运行 `git diff`，与用户确认要提交的文件后按文件名 `git add`
 3. **生成消息**: 创建遵循 Conventional Commits 的提交消息
 4. **确认消息**: 提交前向用户展示建议的消息
 5. **执行提交**: 运行 `git commit -m "<消息>"`
@@ -31,18 +31,18 @@ Streamline git commits by analyzing changes and generating meaningful commit mes
 [可选脚注]
 ```
 
-### Types（统一约定，bump-version / release-tag 共享）
+### Types（release-tag 按此归类 release notes）
 
-| Type | 用途 | release notes 分组 |
-|------|------|-------------------|
-| feat | 新功能 | ✨ 新功能 |
-| fix | 修复 | 🐛 修复 |
-| docs | 文档 | 📝 文档 |
-| style | 格式 | 💄 格式 |
-| refactor | 重构 | ♻️ 重构 |
-| perf | 性能 | ⚡ 性能 |
-| test | 测试 | ✅ 测试 |
-| chore | 杂项/构建/依赖 | 🔧 杂项 |
+| Type | 用途 |
+|------|------|
+| feat | 新功能 |
+| fix | 修复 |
+| docs | 文档 |
+| style | 格式 |
+| refactor | 重构 |
+| perf | 性能 |
+| test | 测试 |
+| chore | 杂项/构建/依赖 |
 
 ### Guidelines
 
@@ -71,23 +71,4 @@ feat(api): 添加用户资料接口
 feat(db)!: 迁移到 PostgreSQL
 
 BREAKING CHANGE: 不再支持 SQLite
-```
-
-## Quick Commands
-
-```bash
-# 查看暂存区变更
-git diff --staged
-
-# 查看所有变更
-git diff
-
-# 暂存所有变更
-git add .
-
-# 提交消息
-git commit -m "type(scope): 中文描述"
-
-# 修改最后一次提交（仅未推送时）
-git commit --amend -m "新消息"
 ```

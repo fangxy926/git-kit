@@ -25,45 +25,17 @@ git-commit-helper  →  bump-version  →  release-tag
 
 ## 用法
 
-### 典型发版流水线
-
 ```
-/bump-version patch     # 1.2.3 → 1.2.4，只改版本文件并提交（chore: 升级版本号至 1.2.4）
-/release-tag            # 生成 release notes → 写入 CHANGELOG.md 并提交 → 打 annotated tag（描述与 CHANGELOG 一致）
+/bump-version           # 默认日期版本（YYYY-MM-DD），也支持 major/minor/patch 或显式版本号
+/release-tag            # 生成 release notes → 写入 CHANGELOG.md 并提交 → 打 annotated tag
 git push origin <分支> <tag>   # 用户手动 push
 ```
 
-### 独立用法
-
-- **只改版本不发版**：只跑 `/bump-version`。
-- **给已提交代码补 tag**：只跑 `/release-tag`。
-- **普通提交**：只跑 `/git-commit-helper`。
-
-### bump-version 调用形式
-
-支持两种版本方案，**优先日期方案**（`YYYY-MM-DD`，同日多次 bump 追加序号 `.1`、`.2`……）：
-
-- `/bump-version` —— 无参数，默认日期方案：新版本 = 今天日期
-- `/bump-version date` / `/bump-version 2026-07-09` —— 显式日期版本
-- `/bump-version patch` —— semver 关键词：`major` / `minor` / `patch`
-- `/bump-version 2.1.0` —— 显式 semver 版本号
-
-支持的版本文件（按优先级探测）：`package.json` → `pyproject.toml`（含包内 `__version__`）→ `Cargo.toml` → `pom.xml`。
-
-只改版本号，不维护 CHANGELOG——CHANGELOG.md 由 release-tag 在打 tag 时更新。
-
-### release-tag 调用形式
-
-- `/release-tag` —— 默认读版本文件当前版本作为 tag 名
-- `/release-tag 2.1.0` —— 显式指定 tag 名
-
-tag 默认无 `v` 前缀；若仓库历史 tag 均带 `v` 则自动跟随。
-
-打 tag 前会先把 release notes 写入项目根目录的 `CHANGELOG.md`（不存在则自动创建）并提交，tag 指向该提交，tag 描述与 CHANGELOG 条目内容一致。
+三个 skill 也可单独使用：只改版本跑 `/bump-version`，给已提交代码补 tag 跑 `/release-tag`，普通提交跑 `/git-commit-helper`。参数、版本文件探测、tag 前缀等细节见各自的 `skills/*/SKILL.md`。
 
 ## 设计约定
 
 - **统一提交规范**：三个 skill 共享同一套 Conventional Commits type 约定（feat/fix/docs/style/refactor/perf/test/chore），release notes 按此分组。
 - **松耦合**：三者通过「版本文件」「Conventional Commits 提交历史」两个隐式契约衔接，不互相硬依赖。
-- **非目标**：不自动 push；不集成 GitHub/GitLab Release 发布。
+- **不自动 push、不自动创建 Release**：远程是 GitHub 时 release-tag 只给出创建 Release 的指引，用户明确要求时才代为执行。
 - **CHANGELOG 与 tag 一致**：CHANGELOG.md 由 release-tag 在打 tag 时维护（不存在则自动创建），tag 描述与 CHANGELOG 条目正文逐字一致，release notes 只生成一次、两处使用。
